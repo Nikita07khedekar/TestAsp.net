@@ -1,0 +1,131 @@
+﻿@model TestAsp.net.Models.StudentViewModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Student Form</h2>
+<hr />
+
+@using (Html.BeginForm("AddStudent", "StudentForm", FormMethod.Post,
+        new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Student.StudentName,"Student Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Student.StudentName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Student.StudentName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Student.CountryId, "Country", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(m => m.Student.CountryId, new SelectList(Model.Countries, "CountryId", "CountryName"), "Select Country", htmlAttributes: new { @class = "form-control", @id = "ddCountry" })
+                    @Html.ValidationMessageFor(model => model.Student.CountryId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Student.StateId, "State", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+
+                    <select id="ddState" name=@Html.NameFor(model =>  model.Student.StateId) class="form-control" >
+                        <option value="-1">Please Select State</option>
+                    </select>
+                    @Html.ValidationMessageFor(model => model.Student.StateId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+            @Html.LabelFor(model => model.Student.CityId, "City", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                 <select name=@Html.NameFor(model => model.Student.CityId) class="form-control"  id="ddCity" >
+                    <option value="-1">Please Select City</option>
+                </select>
+                @Html.ValidationMessageFor(model => model.Student.CityId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "StudentDetails")
+</div>
+
+
+@section Scripts{
+    <script>
+
+        $(document).ready(function () {
+           
+            $("#ddCountry").change(function () {
+
+                $.ajax(
+                    {
+                        type: 'GET',
+                        dataType: 'JSON',
+                        url: '/api/Student/GetStates/' + $('#ddCountry').val(),
+                        success:
+                            function (response) {
+                                var s = '<option value="-1" readonly>Please Select State</option>';
+                                for (var i = 0; i < response.length; i++) {
+                                   s += '<option value="'+ response[i].StateId +'">' + response[i].StateName + '</option>';
+                                   
+                                }
+
+                                $("#ddState").html(s);
+
+                            },
+                        error:
+                            function (response) {
+                                alert("Error: " + response);
+                                console.log(response);
+                            }
+                    });
+            });
+
+            $("#ddState").change(function () {
+
+                $.ajax(
+                    {
+                        type: 'GET',
+                        dataType: 'JSON',
+                        url: '/api/Student/GetCities/'+ $('#ddState').val(),
+                        success:
+                            function (response) {
+                                var s = '<option value="-1" readonly>Please Select City</option>';
+                                for (var i = 0; i < response.length; i++) {
+                                    s += '<option value="'+ response[i].CityId +'">' + response[i].CityName + '</option>';
+                                    console.log(response[i].CityId + " " + response[i].CityName );
+                                }
+
+                                $("#ddCity").html(s);
+
+                            },
+                        error:
+                            function (response) {
+                                alert("Error: " + response);
+                                console.log(response);
+                            }
+                    });
+            })
+        });
+    </script>
+    }
+
+
